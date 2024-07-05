@@ -21,7 +21,7 @@
     },
     "processor": "RP2040",
     "bootloader": "rp2040",
-    "url": "https://github.com/cgapeart/qmk_firmware/edit/master/keyboards/6x6_macropad",
+    "url": "https://github.com/cgapeart/vial-qmk/keyboards/6x6_macropad",
     "usb": {
         "device_version": "1.0.0",
         "pid": "0xC6A9",
