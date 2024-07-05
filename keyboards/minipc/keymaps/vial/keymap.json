@@ -1,0 +1,20 @@
+{
+    "version": 1,
+    "notes": "n/a",
+    "author": "cgpeart",
+    "documentation": "Blank keymap for initializing the macropad",
+    "keymap": "vial",
+    "keyboard": "minipc",
+    "layout": "LAYOUT",
+    "layers": [
+                [
+                    "KC_PGUP", "KC_HOME", "KC_UP", "KC_END", "KC_PGDN", "KC_LEFT", "KC_DOWN", "KC_RGHT", "KC_LCTL", "KC_LSFT"
+                ],
+                [
+                    "KC_TRNS", "KC_TRNS", "KC_TRNS", "KC_TRNS", "KC_TRNS", "KC_TRNS", "KC_TRNS", "KC_TRNS", "KC_TRNS", "KC_TRNS"
+                ],
+                [
+                    "KC_TRNS", "KC_TRNS", "KC_TRNS", "KC_TRNS", "KC_TRNS", "KC_TRNS", "KC_TRNS", "KC_TRNS", "KC_TRNS", "KC_TRNS"
+                ]
+    ]
+}

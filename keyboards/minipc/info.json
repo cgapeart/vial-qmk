@@ -1,16 +1,19 @@
 {
     "manufacturer": "Colin Peart",
-    "keyboard_name": "minipc",
+    "keyboard_name": "cgpeart-minipc",
     "maintainer": "Colin Peart",
-    "bootloader": "atmel-dfu",
+    "bootloader": "caterina",
     "diode_direction": "ROW2COL",
+    "bootloader_instructions": "Hold down pgup when plugging in",
     "features": {
         "bootmagic": true,
-        "command": false,
-        "console": false,
         "extrakey": true,
-        "mousekey": false,
+        "mousekey": true,
         "nkro": true
+    },
+    "bootmagic": {
+        "enabled": true,
+        "matrix": [0,0]
     },
     "matrix_pins": {
         "cols": ["B3", "B4", "B5", "B6"],
@@ -19,8 +22,8 @@
     "processor": "atmega32u4",
     "usb": {
         "device_version": "1.0.0",
-        "pid": "0x3535",
-        "vid": "0x444D"
+        "pid": "0xC6A9",
+        "vid": "0x0004"
     },
     "layouts": {
         "LAYOUT": {

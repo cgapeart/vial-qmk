@@ -1,0 +1,12 @@
+{
+    "name": "cgapeart-minipc",
+    "lighting": "none",
+    "matrix": { "rows": 3, "cols": 4 },
+    "layouts": {
+	  "keymap": [
+        ["0,0\n\n\n\n\n\n\n\n\nPgUp","0,1\n\n\n\n\n\n\n\n\nHome","0,2\n\n\n\n\n\n\n\n\n<i class='fa fa-arrow-up'></i>","0,3\n\n\n\n\n\n\n\n\nEnd"],
+        ["1,0\n\n\n\n\n\n\n\n\nPgDn","1,1\n\n\n\n\n\n\n\n\n<i class='fa fa-arrow-left'></i>","1,2\n\n\n\n\n\n\n\n\n<i class='fa fa-arrow-down'></i>","1,3\n\n\n\n\n\n\n\n\n<i class='fa fa-arrow-right'></i>"],
+        [{"x":1},"2,1\n\n\n\n\n\n\n\n\nCTRL",{"x":1},"2,3\n\n\n\n\n\n\n\n\nSHIFT"]
+      ]
+  }
+}
