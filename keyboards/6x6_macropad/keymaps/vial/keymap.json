@@ -1,49 +1,43 @@
 {
-  "version": 1,
-  "notes": "n/a",
-  "author": "cgpeart",
-  "documentation": "Blank keymap for initializing the macropad",
-  "keyboard": "6x6_macropad",
-  "keymap": "via",
-  "layout": "LAYOUT",
-  "layers": [
-    [
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS"
+    "version": 1,
+    "notes": "n/a",
+    "author": "cgpeart",
+    "documentation": "Blank keymap for initializing the macropad",
+    "keyboard": "6x6_macropad",
+    "keymap": "via",
+    "layout": "LAYOUT",
+    "layers": [
+        [
+            "KC_ESCAPE" , "KC_NUM_LOCK"	,"KC_CALC"	        ,"KC_BSPC"	    ,"TO(0)"	    ,"TO(1)"	    ,
+            "KC_MUTE"   ,"KC_KP_SLASH"	,"KC_KP_ASTERISK"	,"KC_KP_MINUS"	,"TO(2)"	    ,"TO(3)"	    ,
+            "KC_KP_7"	,"KC_KP_8"	    ,"KC_KP_9"      	,"KC_KP_PLUS"	,"KC_RGUI"	    ,"KC_RALT"	    ,
+            "KC_KP_4"	,"KC_KP_5"	    ,"KC_KP_6"	        ,"KC_KP_PLUS"	,"KC_RSFT"	    ,"KC_RCTL"	    ,
+            "KC_KP_1"	,"KC_KP_2"  	,"KC_KP_3"	        ,"KC_KP_ENTER"	,"KC_COMMA"	    ,"KC_KSPACE"    ,
+            "KC_KP_0"	,"KC_KP_0"      ,"KC_KP_DOT"	     ,"KC_KP_ENTER"	,"LSFT(KC_5)"	,"KC_KP_EQUAL"
+        ],
+        [
+            "QK_MACRO_0"	,"QK_MACRO_1"	,"QK_MACRO_3"	,"QK_MACRO_4"	,"KC_TRNS"	    ,"KC_TRNS"      ,
+            "QK_MACRO_6"	,"QK_MACRO_7"	,"QK_MACRO_8"	,"QK_MACRO_9"	,"KC_TRNS"	    ,"KC_TRNS"	    ,
+            "QK_MACRO_9"	,"QK_MACRO_10"	,"QK_MACRO_11"	,"QK_MACRO_12"	,"QK_MACRO_13"	,"QK_MACRO_14"	,
+            "QK_MACRO_15"	,"QK_MACRO_16"	,"QK_MACRO_17"	,"QK_MACRO_18"	,"QK_MACRO_19"	,"QK_MACRO_20"	,
+            "QK_MACRO_21"	,"QK_MACRO_22"	,"QK_MACRO_23"	,"QK_MACRO_24"	,"QK_MACRO_25"	,"QK_MACRO_26"	,
+            "QK_MACRO_27"	,"QK_MACRO_28"	,"QK_MACRO_29"	,"KC_TRNS"	    ,"KC_TRNS"	    ,"KC_TRNS"
+        ],
+        [
+            "KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS",
+            "KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS",
+            "KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS",
+            "KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS",
+            "KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS",
+            "KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS","KC_TRNS"
+        ],
+        [
+            "QK_BOOTLOADER" ,"KC_NO"	    ,"KC_NO"	        ,"KC_NO"	    ,"KC_TRNS"	,"KC_TRNS"	,
+            "KC_NO"	        ,"KC_CAPS_LOCK"	,"KC_SCROLL_LOCK"	,"KC_NUM_LOCK"	,"KC_TRNS"	,"KC_TRNS"	,
+            "MI_CH1"	    ,"MI_CH2"	    ,"MI_CH3"	        ,"MI_CH4"	    ,"MI_CH5"	,"MI_CH6"	,
+            "MI_Cs" 	    ,"MI_Ds"	    ,"KC_NO"	        ,"MI_Fs"	    ,"MI_Gs"	,"MI_As"	,
+            "MI_C"  	    ,"MI_D"	        ,"MI_E"	            ,"MI_F"	        ,"MI_G"	    ,"MI_A"	    ,
+            "MI_B"  	    ,"KC_NO"	    ,"KC_NO"	        ,"KC_NO"	    ,"MI_OCTD"	,"MI_OCTU"
+        ]
     ]
-  ]
 }

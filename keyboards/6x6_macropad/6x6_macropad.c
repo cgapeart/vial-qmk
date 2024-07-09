@@ -1,98 +1,56 @@
 
 #include "6x6_macropad.h"
 
-
-led_config_t g_led_config = {
-//key matrix to LED index
+layer_state_t layer_state_set_kb(layer_state_t state)
 {
-    {0,       1,       2,      3,      4,       5},
-    {6,       7,       8,      9,      10,       11},
-    {12,       13,       14,      15,      16,       17},
-    {18,       19,       20,      21,      22,       23},
-    {24,       25,       26,      27,      28,       29},
-    {30,       31,       32,      33,      34,       35},
-},
-//LED index to physical position
+    switch(get_highest_layer(state))
+    {
+        case 0:
+            rgb_matrix_set_color(43,200,0,200);
+            rgb_matrix_set_color(42,0,0,0);
+            rgb_matrix_set_color(41,0,0,0);
+            rgb_matrix_set_color(40,0,0,0);
+            break;
+        case 1:
+            rgb_matrix_set_color(43,0,0,0);
+            rgb_matrix_set_color(42,200,0,200);
+            rgb_matrix_set_color(41,0,0,0);
+            rgb_matrix_set_color(40,0,0,0);
+            break;
+        case 2:
+            rgb_matrix_set_color(43,0,0,0);
+            rgb_matrix_set_color(42,0,0,0);
+            rgb_matrix_set_color(41,200,0,200);
+            rgb_matrix_set_color(40,0,0,0);
+            break;
+        case 3:
+            rgb_matrix_set_color(43,0,0,0);
+            rgb_matrix_set_color(42,0,0,0);
+            rgb_matrix_set_color(41,0,0,0);
+            rgb_matrix_set_color(40,200,0,200);
+            break;
+    }
+
+    return state;
+}
+
+bool led_update_kb(led_t led_state) {
+    bool res = led_update_user(led_state);
+    if(res) {
+
+        rgb_matrix_set_color(39,led_state.num_lock?128:0,0,0);
+        rgb_matrix_set_color(38,0,led_state.caps_lock?128:0,0);
+        rgb_matrix_set_color(37,0,0,led_state.scroll_lock?128:0);
+       // rgb_matrix_set_color(36,0,0,0);
+    }
+    return res;
+}
+
+void matrix_init_user()
 {
-{10,10},
-{10,20},
-{10,30},
-{10,40},
-{10,50},
-{10,60},
-{20,10},
-{20,20},
-{20,30},
-{20,40},
-{20,50},
-{20,60},
-{30,10},
-{30,20},
-{30,30},
-{30,40},
-{30,50},
-{30,60},
-{40,10},
-{40,20},
-{40,30},
-{40,40},
-{40,50},
-{40,60},
-{50,10},
-{50,20},
-{50,30},
-{50,40},
-{50,50},
-{50,60},
-{60,10},
-{60,20},
-{60,30},
-{60,40},
-{60,50},
-{60,60}
-},
-//LED index to flags
-{
-  LED_FLAG_KEYLIGHT,
-  LED_FLAG_KEYLIGHT | LED_FLAG_INDICATOR,
-  LED_FLAG_KEYLIGHT,
-  LED_FLAG_KEYLIGHT,
-  LED_FLAG_KEYLIGHT| LED_FLAG_INDICATOR,
-  LED_FLAG_KEYLIGHT| LED_FLAG_INDICATOR,
-
-  LED_FLAG_KEYLIGHT,
-  LED_FLAG_KEYLIGHT,
-  LED_FLAG_KEYLIGHT,
-  LED_FLAG_KEYLIGHT,
-  LED_FLAG_KEYLIGHT | LED_FLAG_INDICATOR,
-  LED_FLAG_KEYLIGHT | LED_FLAG_INDICATOR,
-
-  LED_FLAG_KEYLIGHT,
-  LED_FLAG_KEYLIGHT,
-  LED_FLAG_KEYLIGHT,
-  LED_FLAG_KEYLIGHT,
-  LED_FLAG_KEYLIGHT | LED_FLAG_MODIFIER,
-  LED_FLAG_KEYLIGHT | LED_FLAG_MODIFIER,
-
-  LED_FLAG_KEYLIGHT,
-  LED_FLAG_KEYLIGHT,
-  LED_FLAG_KEYLIGHT,
-  LED_FLAG_KEYLIGHT,
-  LED_FLAG_KEYLIGHT | LED_FLAG_MODIFIER,
-  LED_FLAG_KEYLIGHT | LED_FLAG_MODIFIER,
-
-  LED_FLAG_KEYLIGHT,
-  LED_FLAG_KEYLIGHT,
-  LED_FLAG_KEYLIGHT,
-  LED_FLAG_KEYLIGHT,
-  LED_FLAG_KEYLIGHT,
-  LED_FLAG_KEYLIGHT,
-
-  LED_FLAG_KEYLIGHT,
-  LED_FLAG_KEYLIGHT,
-  LED_FLAG_KEYLIGHT,
-  LED_FLAG_KEYLIGHT,
-  LED_FLAG_KEYLIGHT,
-  LED_FLAG_KEYLIGHT
-  }  
-};
+    //set the default layer marker.
+    rgb_matrix_set_color(43,200,0,200);
+    rgb_matrix_set_color(42,0,0,0);
+    rgb_matrix_set_color(41,0,0,0);
+    rgb_matrix_set_color(40,0,0,0);
+}
