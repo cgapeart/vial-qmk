@@ -3,3 +3,4 @@
 #define VIAL_UNLOCK_COMBO_ROWS { 1, 2 }
 #define VIAL_UNLOCK_COMBO_COLS { 1, 2 }
 #define TAPPING_TOGGLE 2
+#define MIDI_ADVANCED
