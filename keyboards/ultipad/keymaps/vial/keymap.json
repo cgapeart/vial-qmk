@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "notes": "n/a",
+  "author": "cgpeart",
+  "documentation": "Blank keymap for initializing the macropad",
+  "keyboard": "cgapeart-ultipad",
+  "keymap": "vial",
+  "layout": "LAYOUT",
+  "layers": [
+    [
+      "KC_CALC",
+      "KC_WWW_BACK",
+      "KC_WWW_FORWARD",
+      "QK_MACRO_0",
+      "KC_NUM",
+      "KC_PSLS",
+      "KC_PAST",
+      "KC_PMNS",
+      "KC_MUTE",
+      "KC_P7",
+      "KC_P8",
+      "KC_P9",
+      "KC_P4",
+      "KC_P5",
+      "KC_P6",
+      "KC_PPLS",
+      "KC_P1",
+      "KC_P2",
+      "KC_P3",
+      "KC_P0",
+      "KC_PDOT",
+      "KC_PENT",
+      "TT(1)",
+      "TT(2)"
+    ],
+    [
+      "KC_TRNS",
+      "KC_TRNS",
+      "KC_TRNS",
+      "KC_TRNS",
+      "KC_PSCR",
+      "KC_SCRL",
+      "KC_PAUS",
+      "KC_TRNS",
+      "KC_TRNS",
+      "KC_PGUP",
+      "KC_HOME",
+      "KC_END",
+      "KC_PGDN",
+      "KC_INS",
+      "KC_DEL",
+      "KC_TRNS",
+      "KC_HOME",
+      "KC_END",
+      "KC_BSPC",
+      "KC_TRNS",
+      "KC_TRNS",
+      "KC_TRNS",
+      "KC_TRNS",
+      "KC_TRNS"
+    ],
+    [
+      "QK_MACRO_1",
+      "QK_MACRO_2",
+      "QK_MACRO_3",
+      "QK_MACRO_4",
+      "QK_MACRO_5",
+      "QK_MACRO_6",
+      "QK_MACRO_7",
+
+      "QK_MACRO_8",
+      "KC_TRNS",
+      "QK_MACRO_9",
+      "QK_MACRO_10",
+      "QK_MACRO_11",
+      "QK_MACRO_13",
+      "QK_MACRO_14",
+      "QK_MACRO_15",
+      "QK_MACRO_12",
+      "KC_TRNS",
+      "KC_TRNS",
+      "KC_TRNS",
+      "KC_TRNS",
+      "KC_TRNS",
+      "KC_TRNS",
+      "QK_REBOOT",
+      "KC_TRNS"
+    ]
+  ],
+  "encoders": [
+    [
+      {
+        "ccw": "KC_VOLD",
+        "cw": "KC_VOLU"
+      }
+    ],[
+      {
+        "ccw": "KC_TRNS",
+        "cw": "KC_TRNS"
+      }
+    ],[
+      {
+        "ccw": "KC_TRNS",
+        "cw": "KC_TRNS"
+      }
+    ]
+  ]
+}

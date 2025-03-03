@@ -7,11 +7,17 @@ typedef hsv_t (*reactive_splash_f)(hsv_t hsv, int16_t dx, int16_t dy, uint8_t di
 bool effect_runner_reactive_splash(uint8_t start, effect_params_t* params, reactive_splash_f effect_func) {
     RGB_MATRIX_USE_LIMITS(led_min, led_max);
 
+    uint8_t black_count = 0;
+    uint8_t tracked_leds_count = 0;
+
     uint8_t count = g_last_hit_tracker.count;
     for (uint8_t i = led_min; i < led_max; i++) {
         RGB_MATRIX_TEST_LED_FLAGS();
-        hsv_t hsv = rgb_matrix_config.hsv;
-        hsv.v     = 0;
+
+        ++ tracked_leds_count;
+        HSV hsv = rgb_matrix_config.hsv;
+        hsv.v   = 0;
+
         for (uint8_t j = start; j < count; j++) {
             int16_t  dx   = g_led_config.point[i].x - g_last_hit_tracker.x[j];
             int16_t  dy   = g_led_config.point[i].y - g_last_hit_tracker.y[j];
@@ -22,7 +28,28 @@ bool effect_runner_reactive_splash(uint8_t start, effect_params_t* params, react
         hsv.v     = scale8(hsv.v, rgb_matrix_config.hsv.v);
         rgb_t rgb = rgb_matrix_hsv_to_rgb(hsv);
         rgb_matrix_set_color(i, rgb.r, rgb.g, rgb.b);
+
+        if(rgb.r == 0 && rgb.g == 0 && rgb.b == 0)
+        {
+            ++black_count;
+        }
+
     }
+
+    if(black_count == tracked_leds_count)
+    {
+        //Animation has decayed to 0.  Run the idle animation.
+        //Set all the colours to a base level, just to show it
+
+        for (uint8_t i = led_min; i < led_max; i++)
+        {
+            RGB_MATRIX_TEST_LED_FLAGS();
+            RGB rgb = rgb_matrix_hsv_to_rgb(rgb_matrix_config.hsv);
+            rgb_matrix_set_color(i, rgb.r, rgb.g, rgb.b);
+        }
+
+    }
+
     return rgb_matrix_check_finished_leds(led_max);
 }
 
