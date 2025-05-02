@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "cosmodactyl7x7.h"
+#include <print.h>
 
 // LED mappings
 led_config_t g_led_config = {
@@ -137,6 +138,7 @@ void keyboard_post_init_kb(void) {
     debug_keyboard = true;
     debug_mouse    = true;
 
+
     keyboard_post_init_user();
 }
 
@@ -220,14 +222,28 @@ void joystick_axis_init(uint8_t axis) {
     // Both sides have to init their inputs., same pins on both side.
     gpio_set_pin_input(JS_X_PIN);
     gpio_set_pin_input(JS_Y_PIN);
-    gpio_set_pin_input_low(JS_B_PIN);
+    gpio_set_pin_input(JS_B_PIN);
+
 }
 
-void joystick_sync_slave_handler(uint8_t in_buflen, const void *in_data, uint8_t out_buflen, void *out_data) {
+void joystick_sync_slave_handler(uint8_t in_buflen, const void *in_data, uint8_t out_buflen, void *out_data)
+{
+    // static uint32_t last_minmaxmsg = 0;
+    // static int16_t minx = INT16_MAX, miny = INT16_MAX, maxx = INT16_MIN,maxy = INT16_MIN;
+
     slave_to_master_t       *s2m = (slave_to_master_t *)out_data;
     s2m->x = analogReadPin(JS_X_PIN);
     s2m->y = analogReadPin(JS_Y_PIN);
     s2m->b = gpio_read_pin(JS_B_PIN);
+
+    // minx = s2m->x < minx? s2m->x:minx;
+    // miny = s2m->y < miny? s2m->y:miny;
+    // maxx = s2m->x > maxx? s2m->x:maxx;
+    // maxy = s2m->y > maxy? s2m->y:maxy;
+
+    // if (timer_elapsed32(last_minmaxmsg) > (SPLIT_JS_SAMPLE_MS * 10)) {
+    //     printf("SMINMAX X(%d,%d), Y(%d,%d)\n", minx,maxx,miny,maxy);
+    // }
 }
 
 void keyboard_post_init_user(void) {
@@ -241,25 +257,35 @@ long map(long x, long in_min, long in_max, long out_min, long out_max) {
 
 void housekeeping_task_user(void) {
     static uint32_t last_sync = 0;
-    static uint32_t last_debug_msg = 0;
+    // static uint32_t last_debug_msg = 0;
+    // static uint32_t last_minmaxmsg = 0;
+    // static int16_t minx = INT16_MAX, miny = INT16_MAX, maxx = INT16_MIN,maxy = INT16_MIN;
     if (is_keyboard_master()) {
 
-	    int16_t mx = 0, my= 0, mmx= 0, mmy= 0;
-        int16_t sx= 0,sy= 0, smx= 0, smy= 0;
+	    int16_t mx = 0, my= 0;
+        int16_t sx= 0,sy= 0;
         bool mb= 0, sb= 0;
 
         if (timer_elapsed32(last_sync) > SPLIT_JS_SAMPLE_MS) {
 
             mx = analogReadPin(JS_X_PIN);
             my = analogReadPin(JS_Y_PIN);
-            mb = gpio_read_pin(JS_B_PIN);
+            mb = !gpio_read_pin(JS_B_PIN);
 
-	        mmx= map(mx, JSCAL_M_X, -128,127);
-	        mmy= map(my, JSCAL_M_Y, -128,127);
+            // minx = mx < minx? mx:minx;
+            // miny = my < miny? my:miny;
+            // maxx = mx > maxx? mx:maxx;
+            // maxy = my > maxy? my:maxy;
+
+            // if (timer_elapsed32(last_minmaxmsg) > (SPLIT_JS_SAMPLE_MS * 100)) {
+            //     printf(" MINMAX X(%d,%d), Y(%d,%d)\n", minx,maxx,miny,maxy);
+            // }
 
 
-            joystick_set_axis(0,mmx);
-            joystick_set_axis(1,mmy);
+
+
+            joystick_set_axis(0,mx);
+            joystick_set_axis(1,my);
 
             if (mb) {
                 register_joystick_button(0);
@@ -276,10 +302,9 @@ void housekeeping_task_user(void) {
                 sx = s2m.x;
                 sy = s2m.y;
                 sb = s2m.b;
-                smx= map(sx, JSCAL_S_X, JSCAL_OUT);
-		        smy= map(sy, JSCAL_S_Y, JSCAL_OUT);
-                joystick_set_axis(2, smx);
-                joystick_set_axis(3, smy);
+
+                joystick_set_axis(2, sx);
+                joystick_set_axis(3, sy);
 
                 if (sb) {
                     register_joystick_button(1);
@@ -288,9 +313,9 @@ void housekeeping_task_user(void) {
                 }
             }
 
-            if (timer_elapsed32(last_debug_msg) > (SPLIT_JS_SAMPLE_MS * 10)) {
-                dprintf("M%c%hd,%hd -> %hd,%hd, S%c%hd,%hd -> %hd,%hd\n", mb?'1':'0', mx, my, mmx, mmy, sb?'1':'0', sx, sy, smx, sy);
-            }
+            // if (timer_elapsed32(last_debug_msg) > (SPLIT_JS_SAMPLE_MS * 100)) {
+            //     dprintf("M%c%hd,%hd -> %hd,%hd, S%c%hd,%hd -> %hd,%hd\n", mb?'1':'0', mx, my, mmx, mmy, sb?'1':'0', sx, sy, smx, sy);
+            // }
         }
     }
 }
