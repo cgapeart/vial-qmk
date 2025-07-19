@@ -182,6 +182,7 @@ uint16_t oled_update_timeout;
 #elif defined(OLED_TRANSPORT_I2C)
 #    if !defined(OLED_DISPLAY_ADDRESS)
 #        define OLED_DISPLAY_ADDRESS 0x3C
+#        message" OLED ADDRESS 0x3c"
 #    endif
 #endif
 
@@ -202,7 +203,7 @@ __attribute__((weak)) bool oled_send_cmd(const uint8_t *data, uint16_t size) {
     return true;
 #elif defined(OLED_TRANSPORT_I2C)
     i2c_status_t status = i2c_transmit((OLED_DISPLAY_ADDRESS << 1), data, size, OLED_I2C_TIMEOUT);
-
+    //printf("I2c Status %d\n", status);
     return (status == I2C_STATUS_SUCCESS);
 #endif
 }
@@ -327,7 +328,8 @@ bool oled_init(oled_rotation_t rotation) {
 #endif
     };
     if (!oled_send_cmd_P(display_setup1, ARRAY_SIZE(display_setup1))) {
-        print("oled_init cmd set 1 failed\n");
+        //printf("OLED command Address: %02x  \n", OLED_DISPLAY_ADDRESS);
+        //print("oled_init cmd set 1 failed\n");
         return false;
     }
 
@@ -336,7 +338,7 @@ bool oled_init(oled_rotation_t rotation) {
             I2C_CMD, SEGMENT_REMAP_INV, COM_SCAN_DEC, DISPLAY_OFFSET, OLED_COM_PIN_OFFSET,
         };
         if (!oled_send_cmd_P(display_normal, ARRAY_SIZE(display_normal))) {
-            print("oled_init cmd normal rotation failed\n");
+            //print("oled_init cmd normal rotation failed\n");
             return false;
         }
     } else {
@@ -344,14 +346,14 @@ bool oled_init(oled_rotation_t rotation) {
             I2C_CMD, SEGMENT_REMAP, COM_SCAN_INC, DISPLAY_OFFSET, (OLED_COM_PIN_COUNT - OLED_COM_PIN_OFFSET) % OLED_COM_PIN_COUNT,
         };
         if (!oled_send_cmd_P(display_flipped, ARRAY_SIZE(display_flipped))) {
-            print("display_flipped failed\n");
+            //print("display_flipped failed\n");
             return false;
         }
     }
 
     static const uint8_t PROGMEM display_setup2[] = {I2C_CMD, COM_PINS, OLED_COM_PINS, CONTRAST, OLED_BRIGHTNESS, PRE_CHARGE_PERIOD, OLED_PRE_CHARGE_PERIOD, VCOM_DETECT, OLED_VCOM_DETECT, DISPLAY_ALL_ON_RESUME, NORMAL_DISPLAY, DEACTIVATE_SCROLL, DISPLAY_ON};
     if (!oled_send_cmd_P(display_setup2, ARRAY_SIZE(display_setup2))) {
-        print("display_setup2 failed\n");
+        //print("display_setup2 failed\n");
         return false;
     }
 

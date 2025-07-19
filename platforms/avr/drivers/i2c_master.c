@@ -24,6 +24,7 @@
 #include "timer.h"
 #include "wait.h"
 #include "util.h"
+#include "print.h"
 #include "progmem.h"
 
 #ifndef F_SCL
@@ -163,6 +164,7 @@ int16_t i2c_read_nack(uint16_t timeout) {
 
 i2c_status_t i2c_transmit(uint8_t address, const uint8_t* data, uint16_t length, uint16_t timeout) {
     i2c_status_t status = i2c_start(address | I2C_ACTION_WRITE, timeout);
+    printf("I2C transmit 0x%02x length %d, timeout %d Status %d\n", address, length, timeout,status);
 
     for (uint16_t i = 0; i < length && status >= 0; i++) {
         status = i2c_write(data[i], timeout);

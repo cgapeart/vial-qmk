@@ -31,6 +31,7 @@
 #include "chibios_config.h"
 #include <ch.h>
 #include <hal.h>
+#include <stdio.h>
 
 #ifndef I2C_DRIVER
 #    define I2C_DRIVER I2CD1
@@ -128,8 +129,14 @@ static i2c_status_t i2c_epilogue(const msg_t status) {
     return status == MSG_TIMEOUT ? I2C_STATUS_TIMEOUT : I2C_STATUS_ERROR;
 }
 
+#define XSTR(X) STR(X)
+#define STR(X) #X
+
 __attribute__((weak)) void i2c_init(void) {
     static bool is_initialised = false;
+
+    //printf("Init i2c %d/%d\n", I2C1_SCL_PIN, I2C1_SDA_PIN);
+
     if (!is_initialised) {
         is_initialised = true;
 
@@ -141,16 +148,22 @@ __attribute__((weak)) void i2c_init(void) {
 #if defined(USE_GPIOV1)
         palSetLineMode(I2C1_SCL_PIN, I2C1_SCL_PAL_MODE);
         palSetLineMode(I2C1_SDA_PIN, I2C1_SDA_PAL_MODE);
+
 #else
         palSetLineMode(I2C1_SCL_PIN, PAL_MODE_ALTERNATE(I2C1_SCL_PAL_MODE) | PAL_OUTPUT_TYPE_OPENDRAIN);
         palSetLineMode(I2C1_SDA_PIN, PAL_MODE_ALTERNATE(I2C1_SDA_PAL_MODE) | PAL_OUTPUT_TYPE_OPENDRAIN);
 #endif
+
+#pragma message "I2c PAL modes"
+#pragma message XSTR(I2C1_SCL_PAL_MODE)
+#pragma message XSTR(I2C1_SDA_PAL_MODE)
     }
 }
 
 i2c_status_t i2c_transmit(uint8_t address, const uint8_t* data, uint16_t length, uint16_t timeout) {
     i2cStart(&I2C_DRIVER, &i2cconfig);
     msg_t status = i2cMasterTransmitTimeout(&I2C_DRIVER, (address >> 1), data, length, 0, 0, TIME_MS2I(timeout));
+    //printf("I2C transmit 0x%02x length %d, timeout %d Status %ld\n", address, length, timeout,status);
     return i2c_epilogue(status);
 }
 
