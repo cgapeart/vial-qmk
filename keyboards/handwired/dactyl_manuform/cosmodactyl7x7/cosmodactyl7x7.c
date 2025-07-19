@@ -70,14 +70,22 @@ bool render_status(void)
     {
         uint8_t button0 =   (joystick_state.buttons[0] & 1) ;
         uint8_t button1 = (joystick_state.buttons[0] & 2) >> 1;
-        sprintf(buffer, "\n%c  %5d,%5d,%1hd\n   %5d,%5d,%1hd",
-            is_transport_connected()? 'M':'m',
+        sprintf(buffer, "\n%c %5d,%5d,%1hd\n   %5d,%5d,%1hd",
+            is_transport_connected()? '+':'-',
             joystick_state.axes[0],joystick_state.axes[1],button0,
             joystick_state.axes[2],joystick_state.axes[3],button1);
     }
     else
     {
-        sprintf(buffer, "\nlayer: %d", get_highest_layer(layer_state));
+        uint8_t currentMode = rgb_matrix_get_mode();
+        uint8_t currentSat = rgb_matrix_get_sat();
+        uint8_t currentHue = rgb_matrix_get_hue();
+        uint8_t currentVal = rgb_matrix_get_val();
+        uint8_t currentSpd = rgb_matrix_get_speed();
+
+        sprintf(buffer, "\nL:%hd, M:%3hd, S:%3hd\nH:%3hd, S:%3hd, V:%3hd",
+             get_highest_layer(layer_state), currentMode, currentSpd,
+            currentHue, currentSat, currentVal);
     }
 
     oled_write_P(buffer, false);
