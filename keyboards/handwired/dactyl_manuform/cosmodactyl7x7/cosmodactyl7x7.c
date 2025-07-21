@@ -163,6 +163,31 @@ void keyboard_post_init_kb(void)
     keyboard_post_init_user();
 }
 
+bool rgb_matrix_indicators_kb()
+{
+    uint8_t layer = get_highest_layer(layer_state);
+    if(layer > 0)
+    {
+        for(uint8_t i = 0; i < RGB_MATRIX_LED_COUNT; ++i)
+        {
+            if(HAS_FLAGS(g_led_config.flags[i], LED_FLAG_USER_1) && layer == 1)
+            {
+                rgb_matrix_set_color(i, 255,0,255);
+            }
+            if(HAS_FLAGS(g_led_config.flags[i], LED_FLAG_USER_2) && layer == 2)
+            {
+                rgb_matrix_set_color(i, 255,255,0);
+            }
+            if(HAS_FLAGS(g_led_config.flags[i], LED_FLAG_USER_3) && layer == 3)
+            {
+                rgb_matrix_set_color(i, 0,255,255);
+            }
+        }
+    }
+
+    return false;
+}
+
 oled_rotation_t oled_init_kb(oled_rotation_t rotation)
 {
     return OLED_ROTATION_0;
