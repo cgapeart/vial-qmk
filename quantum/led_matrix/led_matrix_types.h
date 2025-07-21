@@ -64,6 +64,10 @@ typedef struct PACKED {
 #define LED_FLAG_MODIFIER 0x01
 #define LED_FLAG_KEYLIGHT 0x04
 #define LED_FLAG_INDICATOR 0x08
+#define LED_FLAG_USER_1 0x10
+#define LED_FLAG_USER_2 0x20
+#define LED_FLAG_USER_3 0x40
+#define LED_FLAG_USER_4 0x80
 
 #define NO_LED 255
 

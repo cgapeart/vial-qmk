@@ -206,6 +206,11 @@ def _coerce_led_token(_type, value):
         'LED_FLAG_UNDERGLOW': 0x02,
         'LED_FLAG_KEYLIGHT': 0x04,
         'LED_FLAG_INDICATOR': 0x08,
+        'LED_FLAG_USER_1': 0x10,
+        'LED_FLAG_USER_2': 0x20,
+        'LED_FLAG_USER_3': 0x40,
+        'LED_FLAG_USER_4': 0x80,
+
     }
     if _type is Token.Literal.Number.Integer:
         return int(value)
