@@ -47,86 +47,117 @@ led_config_t g_led_config =
         {159, 47}, {150, 57}, {147, 64}, {146, 47}, {138, 55}, {135, 61}
     },
     {// key flags
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1|LED_FLAG_USER_2,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_2,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_MODIFIER,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1|LED_FLAG_USER_2,
+        // LEFT Column 0
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_3,
         LED_FLAG_KEYLIGHT,
         LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
         LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_MODIFIER,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1|LED_FLAG_USER_2,
+        LED_FLAG_KEYLIGHT|LED_FLAG_MODIFIER|LED_FLAG_USER_4,
+
+        // LEFT Column 1
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_3|LED_FLAG_USER_2,
+        LED_FLAG_KEYLIGHT,
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
+        LED_FLAG_KEYLIGHT|LED_FLAG_MODIFIER|LED_FLAG_USER_4,
+
+        // LEFT Column 2
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_3|LED_FLAG_USER_2,
         LED_FLAG_KEYLIGHT,
         LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
         LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
         LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1|LED_FLAG_USER_2,
+
+        // LEFT Column 3
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_3|LED_FLAG_USER_2,
         LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_2,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_MODIFIER,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_2,
         LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
         LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
         LED_FLAG_KEYLIGHT,
         LED_FLAG_KEYLIGHT,
+
+        // LEFT Column 4
         LED_FLAG_KEYLIGHT|LED_FLAG_USER_2,
         LED_FLAG_KEYLIGHT,
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
+        LED_FLAG_KEYLIGHT|LED_FLAG_MODIFIER,
+        LED_FLAG_KEYLIGHT,
+
+        // LEFT Column 5
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_2,
+        LED_FLAG_KEYLIGHT,
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
+        LED_FLAG_KEYLIGHT,
+
+        // LEFT Column 6
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_2,
         LED_FLAG_KEYLIGHT,
         LED_FLAG_KEYLIGHT,
         LED_FLAG_KEYLIGHT,
+        LED_FLAG_KEYLIGHT,
+
+        // LEFT THUMBS
         LED_FLAG_KEYLIGHT,
         LED_FLAG_KEYLIGHT|LED_FLAG_MODIFIER,
         LED_FLAG_KEYLIGHT,
         LED_FLAG_KEYLIGHT,
         LED_FLAG_KEYLIGHT,
         LED_FLAG_KEYLIGHT|LED_FLAG_MODIFIER,
+
+        // RIGHT Column 0 (right hand edge)
         LED_FLAG_KEYLIGHT,
         LED_FLAG_KEYLIGHT,
         LED_FLAG_KEYLIGHT,
         LED_FLAG_KEYLIGHT,
         LED_FLAG_KEYLIGHT|LED_FLAG_USER_1|LED_FLAG_MODIFIER,
+
+        // RIGHT Column 1
         LED_FLAG_KEYLIGHT|LED_FLAG_USER_2,
         LED_FLAG_KEYLIGHT,
         LED_FLAG_KEYLIGHT,
         LED_FLAG_KEYLIGHT |LED_FLAG_USER_1,
         LED_FLAG_KEYLIGHT |LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_2,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_2,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_2,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_2,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1|LED_FLAG_USER_2,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
+
+        // RIGHT Column 2
         LED_FLAG_KEYLIGHT|LED_FLAG_USER_2,
         LED_FLAG_KEYLIGHT,
         LED_FLAG_KEYLIGHT,
         LED_FLAG_KEYLIGHT,
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
+
+        // RIGHT Column 3
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_2,
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
         LED_FLAG_KEYLIGHT,
+        LED_FLAG_KEYLIGHT,
+
+        // RIGHT Column 4
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_2,
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
+        LED_FLAG_KEYLIGHT,
+
+        // RIGHT Column 5
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_2,
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1|LED_FLAG_USER_4,
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
+
+        // RIGHT Column 6
+        LED_FLAG_KEYLIGHT|LED_FLAG_USER_2,
+        LED_FLAG_KEYLIGHT,
+        LED_FLAG_KEYLIGHT,
+        LED_FLAG_KEYLIGHT,
+        LED_FLAG_KEYLIGHT,
+
+        // RIGHT THUMBS
         LED_FLAG_KEYLIGHT,
         LED_FLAG_KEYLIGHT|LED_FLAG_MODIFIER,
         LED_FLAG_KEYLIGHT,
@@ -165,25 +196,49 @@ void keyboard_post_init_kb(void)
 
 bool rgb_matrix_indicators_kb()
 {
-    uint8_t layer = get_highest_layer(layer_state);
-    if(layer > 0)
+    uint8_t minLed =0;
+    uint8_t maxLed = 0;
+    if (is_keyboard_master())
     {
-        for(uint8_t i = 0; i < RGB_MATRIX_LED_COUNT; ++i)
-        {
-            if(HAS_FLAGS(g_led_config.flags[i], LED_FLAG_USER_1) && layer == 1)
-            {
-                rgb_matrix_set_color(i, 255,0,255);
-            }
-            if(HAS_FLAGS(g_led_config.flags[i], LED_FLAG_USER_2) && layer == 2)
-            {
-                rgb_matrix_set_color(i, 255,255,0);
-            }
-            if(HAS_FLAGS(g_led_config.flags[i], LED_FLAG_USER_3) && layer == 3)
-            {
-                rgb_matrix_set_color(i, 0,255,255);
-            }
-        }
+        minLed = 0;
+        maxLed = 42;
     }
+    else
+    {
+        minLed = 43;
+        maxLed = 85;
+    }
+    uint8_t layer = get_highest_layer(layer_state);
+
+    for(uint8_t i = minLed; i <= maxLed; ++i)
+    {
+        switch(layer)
+        {
+            default: break;
+            case 1:
+                if(HAS_FLAGS(g_led_config.flags[i], LED_FLAG_USER_3))
+                {
+                    rgb_matrix_set_color(i-minLed, 255,0,0); // stuff like the boot keys for the board and system power keys
+                }
+                else if (HAS_FLAGS(g_led_config.flags[i], LED_FLAG_USER_1))
+                {
+                    rgb_matrix_set_color(i-minLed, 255,128,255); //arrow and numeric keys
+                }
+                break;
+            case 2:
+                if(HAS_FLAGS(g_led_config.flags[i], LED_FLAG_USER_4)) // jpystick and power/sleep keys
+                {
+                    rgb_matrix_set_color(i-minLed, 255,255,128);
+                }
+                else if(HAS_FLAGS(g_led_config.flags[i], LED_FLAG_USER_2)) //FKeys
+                {
+                    rgb_matrix_set_color(i-minLed, 255,255,0);
+                }
+                break;
+        }
+
+    }
+
 
     return false;
 }
