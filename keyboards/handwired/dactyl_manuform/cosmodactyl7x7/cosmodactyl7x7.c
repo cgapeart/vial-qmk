@@ -408,7 +408,7 @@ long map(long x, long in_min, long in_max, long out_min, long out_max)
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
-
+#define DEADBAND(Z) (((Z)>=0?(Z):-(Z))<JOYSTICK_DEADBAND?0:(Z))
 
 void housekeeping_task_user(void) {
     if (!isOledGood) {
@@ -438,8 +438,10 @@ void housekeeping_task_user(void) {
                 user_config.y_offset_left = my;
             }
 
-            joystick_set_axis(0, mx-user_config.x_offset_left);
-            joystick_set_axis(1, my-user_config.y_offset_left);
+            mx -= user_config.x_offset_left;
+            my -= user_config.y_offset_left;
+            joystick_set_axis(0, DEADBAND(mx));
+            joystick_set_axis(1, DEADBAND(my));
 
             if (mb)
             {
@@ -464,8 +466,10 @@ void housekeeping_task_user(void) {
                     user_config.y_offset_right = sy;
                 }
 
-                joystick_set_axis(2, sx - user_config.x_offset_right);
-                joystick_set_axis(3, sy - user_config.y_offset_right);
+                sx -= user_config.x_offset_right;
+                sy -= user_config.y_offset_right;
+                joystick_set_axis(2, DEADBAND(sx));
+                joystick_set_axis(3, DEADBAND(sy));
 
                 if (sb)
                 {
