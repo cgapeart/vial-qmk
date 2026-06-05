@@ -4,17 +4,11 @@
 #include "quantum.h"
 #include "cosmodactyl7x7.h"
 #include "split_util.h"
-#include "vialrgb.h"
 #include <print.h>
-#include <string.h>
 
 bool isOledGood = false;
 int16_t sjsx = 0, sjsy = 0;
 bool sjsb = 0;
-
-#ifdef RGB_MATRIX_EFFECT_VIALRGB_DIRECT
-extern HSV g_direct_mode_colors[RGB_MATRIX_LED_COUNT];
-#endif
 
 typedef struct {
     uint32_t frames_acc;
@@ -117,9 +111,9 @@ void vialrgb_direct_fastset_kb(uint16_t first_index, uint8_t num_leds) {
     dprintf("VialRGB fastset kb: side=%c start=%u count=%u\n", is_keyboard_left() ? 'L' : 'R', first_index, num_leds);
 }
 
-void vialrgb_direct_sync_rx_kb(uint8_t num_leds) {
-    rgb_stats.sync_acc += num_leds;
-    dprintf("VialRGB sync rx: side=%c leds=%u\n", is_keyboard_left() ? 'L' : 'R', num_leds);
+void vialrgb_split_sync_slave_kb(uint8_t start, uint8_t count) {
+    rgb_stats.sync_acc += count;
+    dprintf("VialRGB sync rx: side=%c start=%u count=%u\n", is_keyboard_left() ? 'L' : 'R', start, count);
 }
 
 bool rgb_matrix_indicators_advanced_kb(uint8_t led_min, uint8_t led_max) {
@@ -130,57 +124,6 @@ bool rgb_matrix_indicators_advanced_kb(uint8_t led_min, uint8_t led_max) {
         rgb_stats.frames_acc++;
     }
     return rgb_matrix_indicators_advanced_user(led_min, led_max);
-}
-
-#ifdef RGB_MATRIX_EFFECT_VIALRGB_DIRECT
-static void vialrgb_direct_sync_handler(uint8_t in_buflen, const void *in_data, uint8_t out_buflen, void *out_data) {
-    (void)out_buflen;
-    (void)out_data;
-
-    if (in_buflen < 1 + VIALRGB_SPLIT_LEFT * sizeof(HSV)) {
-        dprintf("VialRGB sync rx: short packet (%u)\n", in_buflen);
-        return;
-    }
-
-    const uint8_t *buf = in_data;
-    uint8_t        start = buf[0];
-    if ((uint16_t)(start + VIALRGB_SPLIT_LEFT) > RGB_MATRIX_LED_COUNT) {
-        dprintf("VialRGB sync rx: bad start=%u\n", start);
-        return;
-    }
-
-    memcpy(&g_direct_mode_colors[start], &buf[1], VIALRGB_SPLIT_LEFT * sizeof(HSV));
-    vialrgb_direct_sync_rx_kb(VIALRGB_SPLIT_LEFT);
-}
-#endif
-
-static void vialrgb_direct_sync_master(void) {
-#ifdef RGB_MATRIX_EFFECT_VIALRGB_DIRECT
-    if (!is_transport_connected()) {
-        return;
-    }
-    if (rgb_matrix_get_mode() != RGB_MATRIX_VIALRGB_DIRECT) {
-        return;
-    }
-
-    static uint32_t last_vialrgb_sync = 0;
-    if (timer_elapsed32(last_vialrgb_sync) < 16) {
-        return;
-    }
-    last_vialrgb_sync = timer_read32();
-
-    uint8_t        slave_start = is_keyboard_left() ? VIALRGB_SPLIT_LEFT : 0;
-    static uint8_t sync_buf[1 + VIALRGB_SPLIT_LEFT * sizeof(HSV)];
-    sync_buf[0] = slave_start;
-    memcpy(&sync_buf[1], &g_direct_mode_colors[slave_start], VIALRGB_SPLIT_LEFT * sizeof(HSV));
-
-    if (transaction_rpc_exec(VIALRGB_DIRECT_SYNC, sizeof(sync_buf), sync_buf, 0, NULL)) {
-        rgb_stats.sync_acc++;
-        dprintf("VialRGB sync tx: slave_start=%u\n", slave_start);
-    } else {
-        dprintf("VialRGB sync tx failed\n");
-    }
-#endif
 }
 
 // LED mappings
@@ -580,15 +523,11 @@ void keyboard_post_init_user(void)
 
     printf("joystick input initialized\n");
     transaction_register_rpc(JOYSTICK_SYNC, joystick_sync_slave_handler);
-#ifdef RGB_MATRIX_EFFECT_VIALRGB_DIRECT
-    transaction_register_rpc(VIALRGB_DIRECT_SYNC, vialrgb_direct_sync_handler);
-    dprintf("VialRGB direct split sync registered (%u LEDs)\n", VIALRGB_SPLIT_LEFT);
-#endif
 
     rgb_stats.mode_last = 0xFF;
     rgb_stats_update_mode_name();
 
-    printf("cosmodactyl7x7 %s side, RGB_MATRIX_LED_COUNT=%u, VIALRGB_SPLIT_LEFT=%u\n", is_keyboard_left() ? "left" : "right", RGB_MATRIX_LED_COUNT, VIALRGB_SPLIT_LEFT);
+    printf("cosmodactyl7x7 %s side, RGB_MATRIX_LED_COUNT=%u\n", is_keyboard_left() ? "left" : "right", RGB_MATRIX_LED_COUNT);
 
     eeconfig_read_user_datablock(user_config.raw,0,EECONFIG_USER_DATA_SIZE);
 }
@@ -624,8 +563,6 @@ void housekeeping_task_user(void) {
     static int16_t req = 0;
 
     if (is_keyboard_master()) {
-        vialrgb_direct_sync_master();
-
         int16_t mx = 0, my = 0;
         int16_t sx = 0, sy = 0;
         bool    mb = 0, sb = 0;

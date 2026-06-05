@@ -23,6 +23,17 @@ ifeq ($(strip $(VIALRGB_ENABLE)), yes)
     OPT_DEFS += -DVIALRGB_ENABLE
 endif
 
+ifeq ($(strip $(VIALRGB_SPLIT_SYNC)), yes)
+    SRC += $(QUANTUM_DIR)/vialrgb_split.c
+    OPT_DEFS += -DVIALRGB_SPLIT_SYNC
+    ifneq ($(strip $(VIALRGB_ENABLE)), yes)
+        $(call CATASTROPHIC_ERROR,VIALRGB_SPLIT_SYNC requires VIALRGB_ENABLE=yes)
+    endif
+    ifneq ($(strip $(RGB_MATRIX_ENABLE)), yes)
+        $(call CATASTROPHIC_ERROR,VIALRGB_SPLIT_SYNC requires RGB_MATRIX_ENABLE=yes)
+    endif
+endif
+
 ifeq ($(strip $(QMK_SETTINGS)), yes)
     AUTO_SHIFT_ENABLE := yes
     SRC += $(QUANTUM_DIR)/qmk_settings.c

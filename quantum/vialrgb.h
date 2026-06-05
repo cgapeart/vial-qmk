@@ -26,5 +26,17 @@ void vialrgb_set_value(uint8_t *data, uint8_t length);
 void vialrgb_save(uint8_t *data, uint8_t length);
 
 #if defined(VIALRGB_ENABLE) && !defined(RGB_MATRIX_ENABLE)
-#error VIALRGB_ENABLE=yes requires RGB_MATRIX_ENABLE=yes
+#    error VIALRGB_ENABLE=yes requires RGB_MATRIX_ENABLE=yes
+#endif
+
+#if defined(VIALRGB_SPLIT_SYNC)
+#    if !defined(VIALRGB_ENABLE)
+#        error VIALRGB_SPLIT_SYNC requires VIALRGB_ENABLE
+#    endif
+#    if !defined(RGB_MATRIX_SPLIT)
+#        error VIALRGB_SPLIT_SYNC requires RGB_MATRIX_SPLIT (split keyboard with rgb_matrix.split_count)
+#    endif
+#    if defined(VIALRGB_NO_DIRECT)
+#        error VIALRGB_SPLIT_SYNC requires direct mode (do not set VIALRGB_NO_DIRECT)
+#    endif
 #endif

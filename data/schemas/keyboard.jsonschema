@@ -1015,6 +1015,21 @@
                 "speaker": {"$ref": "./definitions.jsonschema#/mcu_pin"}
             }
         },
+        "vialrgb": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "split_sync": {
+                    "type": "boolean",
+                    "description": "Sync VialRGB direct mode color buffer to the non-USB split half"
+                },
+                "split_sync_ms": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Minimum interval between direct color sync packets (milliseconds)"
+                }
+            }
+        },
         "ws2812": {
             "type": "object",
             "additionalProperties": false,

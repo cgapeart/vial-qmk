@@ -95,6 +95,10 @@ typedef struct _rgb_matrix_sync_t {
 } rgb_matrix_sync_t;
 #endif // defined(RGB_MATRIX_ENABLE) && defined(RGB_MATRIX_SPLIT)
 
+#if defined(VIALRGB_ENABLE) && defined(VIALRGB_SPLIT_SYNC) && defined(RGB_MATRIX_SPLIT) && !defined(VIALRGB_NO_DIRECT)
+#    include "vialrgb_split.h"
+#endif // VIALRGB split sync
+
 #ifdef SPLIT_MODS_ENABLE
 typedef struct _split_mods_sync_t {
     uint8_t real_mods;
@@ -193,6 +197,10 @@ typedef struct _split_shared_memory_t {
 #if defined(RGB_MATRIX_ENABLE) && defined(RGB_MATRIX_SPLIT)
     rgb_matrix_sync_t rgb_matrix_sync;
 #endif // defined(RGB_MATRIX_ENABLE) && defined(RGB_MATRIX_SPLIT)
+
+#if defined(VIALRGB_ENABLE) && defined(VIALRGB_SPLIT_SYNC) && defined(RGB_MATRIX_SPLIT) && !defined(VIALRGB_NO_DIRECT)
+    vialrgb_direct_sync_t vialrgb_direct_sync;
+#endif // VIALRGB split sync
 
 #if defined(WPM_ENABLE) && defined(SPLIT_WPM_ENABLE)
     uint8_t current_wpm;

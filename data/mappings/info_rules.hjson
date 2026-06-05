@@ -56,5 +56,6 @@
     "DEFAULT_FOLDER": {"info_key": "_deprecated.default_folder", "deprecated": true},
     "CTPC": {"info_key": "_invalid.ctpc", "invalid": true, "replace_with": "CONVERT_TO=proton_c"},
     "CONVERT_TO_PROTON_C": {"info_key": "_invalid.ctpc", "invalid": true, "replace_with": "CONVERT_TO=proton_c"},
+    "VIALRGB_SPLIT_SYNC": {"info_key": "vialrgb.split_sync", "value_type": "bool"},
     "VIAL_ENABLE": {"info_key": "_invalid.vial", "invalid": true}
 }

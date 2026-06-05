@@ -43,6 +43,9 @@
 #ifdef RGB_MATRIX_ENABLE
 #    include "rgb_matrix.h"
 #endif
+#ifdef VIALRGB_ENABLE
+#    include "vialrgb_split.h"
+#endif
 #ifdef OLED_ENABLE
 #    include "oled_driver.h"
 #endif
@@ -604,6 +607,57 @@ static void rgb_matrix_handlers_slave(matrix_row_t master_matrix[], matrix_row_t
 #endif // defined(RGB_MATRIX_ENABLE) && defined(RGB_MATRIX_SPLIT)
 
 ////////////////////////////////////////////////////
+// VialRGB Direct (split color buffer)
+
+#if defined(VIALRGB_ENABLE) && defined(VIALRGB_SPLIT_SYNC) && defined(RGB_MATRIX_SPLIT) && !defined(VIALRGB_NO_DIRECT)
+
+static bool vialrgb_direct_handlers_master(matrix_row_t master_matrix[], matrix_row_t slave_matrix[]) {
+    static uint32_t last_update = 0;
+
+    if (!vialrgb_split_should_sync()) {
+        return true;
+    }
+
+    if (timer_elapsed32(last_update) < VIALRGB_SPLIT_SYNC_MS) {
+        return true;
+    }
+
+    vialrgb_direct_sync_t sync;
+    vialrgb_split_prepare_direct(&sync);
+    if (sync.count == 0) {
+        return true;
+    }
+
+    bool okay = send_if_data_mismatch(PUT_VIALRGB_DIRECT, &last_update, &sync, &split_shmem->vialrgb_direct_sync, sizeof(sync));
+#    ifdef CONSOLE_ENABLE
+    if (okay) {
+        dprintf("VialRGB split sync tx: start=%u count=%u\n", sync.start, sync.count);
+    }
+#    endif
+    return okay;
+}
+
+static void vialrgb_direct_handlers_slave(matrix_row_t master_matrix[], matrix_row_t slave_matrix[]) {
+    split_shared_memory_lock();
+    vialrgb_direct_sync_t sync = split_shmem->vialrgb_direct_sync;
+    split_shared_memory_unlock();
+
+    vialrgb_split_apply_direct(&sync);
+}
+
+#    define TRANSACTIONS_VIALRGB_DIRECT_MASTER() TRANSACTION_HANDLER_MASTER(vialrgb_direct)
+#    define TRANSACTIONS_VIALRGB_DIRECT_SLAVE() TRANSACTION_HANDLER_SLAVE(vialrgb_direct)
+#    define TRANSACTIONS_VIALRGB_DIRECT_REGISTRATIONS [PUT_VIALRGB_DIRECT] = trans_initiator2target_initializer(vialrgb_direct_sync),
+
+#else // VIALRGB split sync
+
+#    define TRANSACTIONS_VIALRGB_DIRECT_MASTER()
+#    define TRANSACTIONS_VIALRGB_DIRECT_SLAVE()
+#    define TRANSACTIONS_VIALRGB_DIRECT_REGISTRATIONS
+
+#endif // VIALRGB split sync
+
+////////////////////////////////////////////////////
 // WPM
 
 #if defined(WPM_ENABLE) && defined(SPLIT_WPM_ENABLE)
@@ -936,6 +990,7 @@ split_transaction_desc_t split_transaction_table[NUM_TOTAL_TRANSACTIONS] = {
     TRANSACTIONS_RGBLIGHT_REGISTRATIONS
     TRANSACTIONS_LED_MATRIX_REGISTRATIONS
     TRANSACTIONS_RGB_MATRIX_REGISTRATIONS
+    TRANSACTIONS_VIALRGB_DIRECT_REGISTRATIONS
     TRANSACTIONS_WPM_REGISTRATIONS
     TRANSACTIONS_OLED_REGISTRATIONS
     TRANSACTIONS_ST7565_REGISTRATIONS
@@ -966,6 +1021,7 @@ bool transactions_master(matrix_row_t master_matrix[], matrix_row_t slave_matrix
     TRANSACTIONS_RGBLIGHT_MASTER();
     TRANSACTIONS_LED_MATRIX_MASTER();
     TRANSACTIONS_RGB_MATRIX_MASTER();
+    TRANSACTIONS_VIALRGB_DIRECT_MASTER();
     TRANSACTIONS_WPM_MASTER();
     TRANSACTIONS_OLED_MASTER();
     TRANSACTIONS_ST7565_MASTER();
@@ -989,6 +1045,7 @@ void transactions_slave(matrix_row_t master_matrix[], matrix_row_t slave_matrix[
     TRANSACTIONS_RGBLIGHT_SLAVE();
     TRANSACTIONS_LED_MATRIX_SLAVE();
     TRANSACTIONS_RGB_MATRIX_SLAVE();
+    TRANSACTIONS_VIALRGB_DIRECT_SLAVE();
     TRANSACTIONS_WPM_SLAVE();
     TRANSACTIONS_OLED_SLAVE();
     TRANSACTIONS_ST7565_SLAVE();

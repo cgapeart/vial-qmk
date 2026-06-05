@@ -67,7 +67,11 @@ enum serial_transaction_id {
 
 #if defined(RGB_MATRIX_ENABLE) && defined(RGB_MATRIX_SPLIT)
     PUT_RGB_MATRIX,
-#endif // defined(RGBLIGHT_ENABLE) && defined(RGBLIGHT_SPLIT)
+#endif // defined(RGB_MATRIX_ENABLE) && defined(RGB_MATRIX_SPLIT)
+
+#if defined(VIALRGB_ENABLE) && defined(VIALRGB_SPLIT_SYNC) && defined(RGB_MATRIX_SPLIT) && !defined(VIALRGB_NO_DIRECT)
+    PUT_VIALRGB_DIRECT,
+#endif // VIALRGB split sync
 
 #if defined(WPM_ENABLE) && defined(SPLIT_WPM_ENABLE)
     PUT_WPM,
