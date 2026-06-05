@@ -5,8 +5,14 @@
 
 #include <inttypes.h>
 #include <string.h>
+#include "debug.h"
 #include "rgb_matrix.h"
 #include "vial.h"
+
+__attribute__((weak)) void vialrgb_direct_fastset_kb(uint16_t first_index, uint8_t num_leds) {
+    (void)first_index;
+    (void)num_leds;
+}
 
 typedef struct {
     uint16_t vialrgb_id;
@@ -71,6 +77,9 @@ static void set_mode(uint16_t mode) {
         rgb_matrix_enable_noeeprom();
         rgb_matrix_mode_noeeprom(vialrgb_id_to_qmk_id(mode));
     }
+#ifdef CONSOLE_ENABLE
+    dprintf("VialRGB set_mode: vialrgb_id=%u qmk_mode=%u\n", mode, vialrgb_id_to_qmk_id(mode));
+#endif
 }
 
 #ifdef RGB_MATRIX_EFFECT_VIALRGB_DIRECT
@@ -107,6 +116,10 @@ static void fast_set_leds(uint8_t *args, size_t length) {
         uint8_t val = args[i * 3 + 2];
         g_direct_mode_colors[i + first_index].v = (val > RGB_MATRIX_MAXIMUM_BRIGHTNESS) ? RGB_MATRIX_MAXIMUM_BRIGHTNESS : val;
     }
+#ifdef CONSOLE_ENABLE
+    dprintf("VialRGB fastset: start=%u count=%u\n", first_index, num_leds);
+#endif
+    vialrgb_direct_fastset_kb(first_index, num_leds);
 }
 #endif
 

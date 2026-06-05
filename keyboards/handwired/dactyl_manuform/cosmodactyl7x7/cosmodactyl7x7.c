@@ -1,12 +1,187 @@
 // Copyright 2022 Matthew Dews (@matthew-dews)
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include "quantum.h"
 #include "cosmodactyl7x7.h"
 #include "split_util.h"
+#include "vialrgb.h"
 #include <print.h>
+#include <string.h>
+
 bool isOledGood = false;
 int16_t sjsx = 0, sjsy = 0;
 bool sjsb = 0;
+
+#ifdef RGB_MATRIX_EFFECT_VIALRGB_DIRECT
+extern HSV g_direct_mode_colors[RGB_MATRIX_LED_COUNT];
+#endif
+
+typedef struct {
+    uint32_t frames_acc;
+    uint32_t leds_acc;
+    uint32_t fastset_acc;
+    uint32_t sync_acc;
+    uint32_t frames_disp;
+    uint32_t leds_disp;
+    uint32_t fastset_disp;
+    uint32_t sync_disp;
+    uint8_t  mode_last;
+    char     mode_name[12];
+} rgb_side_stats_t;
+
+static rgb_side_stats_t rgb_stats = {0};
+
+static const char *rgb_mode_name_for(uint8_t mode) {
+    switch (mode) {
+        case RGB_MATRIX_NONE:
+            return "None";
+#ifdef RGB_MATRIX_EFFECT_VIALRGB_DIRECT
+        case RGB_MATRIX_VIALRGB_DIRECT:
+            return "Direct";
+#endif
+#ifdef ENABLE_RGB_MATRIX_SOLID_COLOR
+        case RGB_MATRIX_SOLID_COLOR:
+            return "Solid";
+#endif
+#ifdef ENABLE_RGB_MATRIX_JELLYBEAN_RAINDROPS
+        case RGB_MATRIX_JELLYBEAN_RAINDROPS:
+            return "Jelly";
+#endif
+#ifdef ENABLE_RGB_MATRIX_CYCLE_LEFT_RIGHT
+        case RGB_MATRIX_CYCLE_LEFT_RIGHT:
+            return "CycleLR";
+#endif
+#ifdef ENABLE_RGB_MATRIX_CYCLE_ALL
+        case RGB_MATRIX_CYCLE_ALL:
+            return "CycleAll";
+#endif
+#ifdef ENABLE_RGB_MATRIX_RAINBOW_MOVING_CHEVRON
+        case RGB_MATRIX_RAINBOW_MOVING_CHEVRON:
+            return "Chevron";
+#endif
+#ifdef ENABLE_RGB_MATRIX_BREATHING
+        case RGB_MATRIX_BREATHING:
+            return "Breath";
+#endif
+        default:
+            return NULL;
+    }
+}
+
+static void rgb_stats_update_mode_name(void) {
+    if (!rgb_matrix_is_enabled()) {
+        strncpy(rgb_stats.mode_name, "Off", sizeof(rgb_stats.mode_name));
+        rgb_stats.mode_name[sizeof(rgb_stats.mode_name) - 1] = '\0';
+        return;
+    }
+
+    uint8_t           mode = rgb_matrix_get_mode();
+    const char *known      = rgb_mode_name_for(mode);
+    if (known != NULL) {
+        strncpy(rgb_stats.mode_name, known, sizeof(rgb_stats.mode_name));
+    } else {
+        snprintf(rgb_stats.mode_name, sizeof(rgb_stats.mode_name), "M:%u", mode);
+    }
+    rgb_stats.mode_name[sizeof(rgb_stats.mode_name) - 1] = '\0';
+}
+
+static void rgb_stats_tick_second(void) {
+    rgb_stats.frames_disp  = rgb_stats.frames_acc;
+    rgb_stats.leds_disp    = rgb_stats.leds_acc;
+    rgb_stats.fastset_disp = rgb_stats.fastset_acc;
+    rgb_stats.sync_disp    = rgb_stats.sync_acc;
+    rgb_stats.frames_acc   = 0;
+    rgb_stats.leds_acc     = 0;
+    rgb_stats.fastset_acc  = 0;
+    rgb_stats.sync_acc     = 0;
+
+    if (!rgb_matrix_is_enabled()) {
+        if (rgb_stats.mode_last != RGB_MATRIX_NONE) {
+            rgb_stats.mode_last = RGB_MATRIX_NONE;
+            rgb_stats_update_mode_name();
+        }
+        return;
+    }
+
+    uint8_t mode = rgb_matrix_get_mode();
+    if (mode != rgb_stats.mode_last) {
+        rgb_stats.mode_last = mode;
+        rgb_stats_update_mode_name();
+    }
+}
+
+void vialrgb_direct_fastset_kb(uint16_t first_index, uint8_t num_leds) {
+    if (is_keyboard_master()) {
+        rgb_stats.fastset_acc += num_leds;
+    }
+    dprintf("VialRGB fastset kb: side=%c start=%u count=%u\n", is_keyboard_left() ? 'L' : 'R', first_index, num_leds);
+}
+
+void vialrgb_direct_sync_rx_kb(uint8_t num_leds) {
+    rgb_stats.sync_acc += num_leds;
+    dprintf("VialRGB sync rx: side=%c leds=%u\n", is_keyboard_left() ? 'L' : 'R', num_leds);
+}
+
+bool rgb_matrix_indicators_advanced_kb(uint8_t led_min, uint8_t led_max) {
+    if (led_max > led_min) {
+        rgb_stats.leds_acc += (led_max - led_min);
+    }
+    if (!rgb_matrix_check_finished_leds(led_max)) {
+        rgb_stats.frames_acc++;
+    }
+    return rgb_matrix_indicators_advanced_user(led_min, led_max);
+}
+
+#ifdef RGB_MATRIX_EFFECT_VIALRGB_DIRECT
+static void vialrgb_direct_sync_handler(uint8_t in_buflen, const void *in_data, uint8_t out_buflen, void *out_data) {
+    (void)out_buflen;
+    (void)out_data;
+
+    if (in_buflen < 1 + VIALRGB_SPLIT_LEFT * sizeof(HSV)) {
+        dprintf("VialRGB sync rx: short packet (%u)\n", in_buflen);
+        return;
+    }
+
+    const uint8_t *buf = in_data;
+    uint8_t        start = buf[0];
+    if ((uint16_t)(start + VIALRGB_SPLIT_LEFT) > RGB_MATRIX_LED_COUNT) {
+        dprintf("VialRGB sync rx: bad start=%u\n", start);
+        return;
+    }
+
+    memcpy(&g_direct_mode_colors[start], &buf[1], VIALRGB_SPLIT_LEFT * sizeof(HSV));
+    vialrgb_direct_sync_rx_kb(VIALRGB_SPLIT_LEFT);
+}
+#endif
+
+static void vialrgb_direct_sync_master(void) {
+#ifdef RGB_MATRIX_EFFECT_VIALRGB_DIRECT
+    if (!is_transport_connected()) {
+        return;
+    }
+    if (rgb_matrix_get_mode() != RGB_MATRIX_VIALRGB_DIRECT) {
+        return;
+    }
+
+    static uint32_t last_vialrgb_sync = 0;
+    if (timer_elapsed32(last_vialrgb_sync) < 16) {
+        return;
+    }
+    last_vialrgb_sync = timer_read32();
+
+    uint8_t        slave_start = is_keyboard_left() ? VIALRGB_SPLIT_LEFT : 0;
+    static uint8_t sync_buf[1 + VIALRGB_SPLIT_LEFT * sizeof(HSV)];
+    sync_buf[0] = slave_start;
+    memcpy(&sync_buf[1], &g_direct_mode_colors[slave_start], VIALRGB_SPLIT_LEFT * sizeof(HSV));
+
+    if (transaction_rpc_exec(VIALRGB_DIRECT_SYNC, sizeof(sync_buf), sync_buf, 0, NULL)) {
+        rgb_stats.sync_acc++;
+        dprintf("VialRGB sync tx: slave_start=%u\n", slave_start);
+    } else {
+        dprintf("VialRGB sync tx failed\n");
+    }
+#endif
+}
 
 // LED mappings
 led_config_t g_led_config =
@@ -46,124 +221,127 @@ led_config_t g_led_config =
         {155, 1}, {155, 9}, {154, 17}, {154, 25}, {154, 33},
         {159, 47}, {150, 57}, {147, 64}, {146, 47}, {138, 55}, {135, 61}
     },
-    {// key flags
+    {// key flags -- hex literals required: QMK c_parse (lib/python/qmk/c_parse.py)
+        // counts each LED_FLAG_* token separately when flags are OR'd with |, which
+        // breaks info.json generation (86 LEDs vs 141 parsed tokens). Keep the decoded
+        // flag names in end-of-line comments; runtime still uses these as uint8 flags.
         // LEFT Column 0
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_3,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_MODIFIER|LED_FLAG_USER_4,
+        0x44, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_3
+        0x04, // LED_FLAG_KEYLIGHT
+        0x14, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1
+        0x14, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1
+        0x85, // LED_FLAG_KEYLIGHT | LED_FLAG_MODIFIER | LED_FLAG_USER_4
 
         // LEFT Column 1
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_3|LED_FLAG_USER_2,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_MODIFIER|LED_FLAG_USER_4,
+        0x64, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_3 | LED_FLAG_USER_2
+        0x04, // LED_FLAG_KEYLIGHT
+        0x14, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1
+        0x14, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1
+        0x85, // LED_FLAG_KEYLIGHT | LED_FLAG_MODIFIER | LED_FLAG_USER_4
 
         // LEFT Column 2
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_3|LED_FLAG_USER_2,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT,
+        0x64, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_3 | LED_FLAG_USER_2
+        0x04, // LED_FLAG_KEYLIGHT
+        0x14, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1
+        0x14, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1
+        0x04, // LED_FLAG_KEYLIGHT
 
         // LEFT Column 3
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_3|LED_FLAG_USER_2,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT,
+        0x64, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_3 | LED_FLAG_USER_2
+        0x04, // LED_FLAG_KEYLIGHT
+        0x14, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1
+        0x14, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1
+        0x04, // LED_FLAG_KEYLIGHT
+        0x04, // LED_FLAG_KEYLIGHT
 
         // LEFT Column 4
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_2,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_MODIFIER,
-        LED_FLAG_KEYLIGHT,
+        0x24, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_2
+        0x04, // LED_FLAG_KEYLIGHT
+        0x14, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1
+        0x14, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1
+        0x05, // LED_FLAG_KEYLIGHT | LED_FLAG_MODIFIER
+        0x04, // LED_FLAG_KEYLIGHT
 
         // LEFT Column 5
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_2,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT,
+        0x24, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_2
+        0x04, // LED_FLAG_KEYLIGHT
+        0x14, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1
+        0x14, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1
+        0x04, // LED_FLAG_KEYLIGHT
 
         // LEFT Column 6
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_2,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT,
+        0x24, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_2
+        0x04, // LED_FLAG_KEYLIGHT
+        0x04, // LED_FLAG_KEYLIGHT
+        0x04, // LED_FLAG_KEYLIGHT
+        0x04, // LED_FLAG_KEYLIGHT
 
         // LEFT THUMBS
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT|LED_FLAG_MODIFIER,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT|LED_FLAG_MODIFIER,
+        0x04, // LED_FLAG_KEYLIGHT
+        0x05, // LED_FLAG_KEYLIGHT | LED_FLAG_MODIFIER
+        0x04, // LED_FLAG_KEYLIGHT
+        0x04, // LED_FLAG_KEYLIGHT
+        0x04, // LED_FLAG_KEYLIGHT
+        0x05, // LED_FLAG_KEYLIGHT | LED_FLAG_MODIFIER
 
         // RIGHT Column 0 (right hand edge)
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1|LED_FLAG_MODIFIER,
+        0x04, // LED_FLAG_KEYLIGHT
+        0x04, // LED_FLAG_KEYLIGHT
+        0x04, // LED_FLAG_KEYLIGHT
+        0x04, // LED_FLAG_KEYLIGHT
+        0x15, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1 | LED_FLAG_MODIFIER
 
         // RIGHT Column 1
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_2,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT |LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT |LED_FLAG_USER_1,
+        0x24, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_2
+        0x04, // LED_FLAG_KEYLIGHT
+        0x04, // LED_FLAG_KEYLIGHT
+        0x14, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1
+        0x14, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1
 
         // RIGHT Column 2
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_2,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
+        0x24, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_2
+        0x04, // LED_FLAG_KEYLIGHT
+        0x04, // LED_FLAG_KEYLIGHT
+        0x04, // LED_FLAG_KEYLIGHT
+        0x14, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1
 
         // RIGHT Column 3
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_2,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT,
+        0x24, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_2
+        0x14, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1
+        0x14, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1
+        0x14, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1
+        0x04, // LED_FLAG_KEYLIGHT
+        0x04, // LED_FLAG_KEYLIGHT
 
         // RIGHT Column 4
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_2,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT,
+        0x24, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_2
+        0x14, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1
+        0x14, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1
+        0x14, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1
+        0x14, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1
+        0x04, // LED_FLAG_KEYLIGHT
 
         // RIGHT Column 5
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_2,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1|LED_FLAG_USER_4,
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_1,
+        0x24, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_2
+        0x14, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1
+        0x14, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1
+        0x94, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1 | LED_FLAG_USER_4
+        0x14, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_1
 
         // RIGHT Column 6
-        LED_FLAG_KEYLIGHT|LED_FLAG_USER_2,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT,
+        0x24, // LED_FLAG_KEYLIGHT | LED_FLAG_USER_2
+        0x04, // LED_FLAG_KEYLIGHT
+        0x04, // LED_FLAG_KEYLIGHT
+        0x04, // LED_FLAG_KEYLIGHT
+        0x04, // LED_FLAG_KEYLIGHT
 
         // RIGHT THUMBS
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT|LED_FLAG_MODIFIER,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT,
-        LED_FLAG_KEYLIGHT|LED_FLAG_MODIFIER,
-        LED_FLAG_KEYLIGHT|LED_FLAG_MODIFIER
+        0x04, // LED_FLAG_KEYLIGHT
+        0x05, // LED_FLAG_KEYLIGHT | LED_FLAG_MODIFIER
+        0x04, // LED_FLAG_KEYLIGHT
+        0x04, // LED_FLAG_KEYLIGHT
+        0x05, // LED_FLAG_KEYLIGHT | LED_FLAG_MODIFIER
+        0x05, // LED_FLAG_KEYLIGHT | LED_FLAG_MODIFIER
     }
 };
 
@@ -294,6 +472,18 @@ bool render_status(void)
 
     oled_write_P(buffer, false);
 
+    oled_write_P(PSTR("\n"), false);
+    if (debug_enable) {
+        oled_write_P(PSTR("DBG "), false);
+    }
+    oled_write(rgb_stats.mode_name, false);
+    if (is_keyboard_master()) {
+        sprintf(buffer, " fr:%lu ld:%lu fs:%lu", (unsigned long)rgb_stats.frames_disp, (unsigned long)rgb_stats.leds_disp, (unsigned long)rgb_stats.fastset_disp);
+    } else {
+        sprintf(buffer, " fr:%lu ld:%lu rx:%lu", (unsigned long)rgb_stats.frames_disp, (unsigned long)rgb_stats.leds_disp, (unsigned long)rgb_stats.sync_disp);
+    }
+    oled_write(buffer, false);
+
     return false;
 }
 
@@ -390,6 +580,15 @@ void keyboard_post_init_user(void)
 
     printf("joystick input initialized\n");
     transaction_register_rpc(JOYSTICK_SYNC, joystick_sync_slave_handler);
+#ifdef RGB_MATRIX_EFFECT_VIALRGB_DIRECT
+    transaction_register_rpc(VIALRGB_DIRECT_SYNC, vialrgb_direct_sync_handler);
+    dprintf("VialRGB direct split sync registered (%u LEDs)\n", VIALRGB_SPLIT_LEFT);
+#endif
+
+    rgb_stats.mode_last = 0xFF;
+    rgb_stats_update_mode_name();
+
+    printf("cosmodactyl7x7 %s side, RGB_MATRIX_LED_COUNT=%u, VIALRGB_SPLIT_LEFT=%u\n", is_keyboard_left() ? "left" : "right", RGB_MATRIX_LED_COUNT, VIALRGB_SPLIT_LEFT);
 
     eeconfig_read_user_datablock(user_config.raw,0,EECONFIG_USER_DATA_SIZE);
 }
@@ -414,12 +613,19 @@ void housekeeping_task_user(void) {
     if (!isOledGood) {
         isOledGood = oled_init(oled_init_kb(OLED_ROTATION_0));
     }
+
+    static uint32_t last_rgb_stat_update = 0;
+    if (timer_elapsed32(last_rgb_stat_update) >= 1000) {
+        last_rgb_stat_update = timer_read32();
+        rgb_stats_tick_second();
+    }
+
     static uint32_t last_sync       = 0;
     static int16_t req = 0;
 
+    if (is_keyboard_master()) {
+        vialrgb_direct_sync_master();
 
-    if (is_keyboard_master())
-    {
         int16_t mx = 0, my = 0;
         int16_t sx = 0, sy = 0;
         bool    mb = 0, sb = 0;
